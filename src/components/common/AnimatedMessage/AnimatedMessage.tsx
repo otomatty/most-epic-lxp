@@ -55,7 +55,6 @@ const AnimatedMessage: Component<AnimatedMessageProps> = ({
   };
 
   createEffect(() => {
-    console.log("Messages changed:", messages);
     setTimeout(startAnimation, delay);
   });
 

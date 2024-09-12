@@ -7,6 +7,20 @@ export const DeviceStepContainer = styled("div")`
   width: 100%;
 `;
 
+export const FadeInContainer = styled("div")`
+  animation: fadeIn 0.5s ease-in-out;
+  width: 100%;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
 export const DeviceStepLabel = styled("label")`
   margin-bottom: 10px;
   font-size: 16px;

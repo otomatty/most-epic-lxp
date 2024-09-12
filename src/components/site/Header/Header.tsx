@@ -1,9 +1,14 @@
 import { Component } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { HeaderContainer, Nav, NavItem, Logo } from "./Header.styled";
+import { CTAButton } from "../../../pages/site/Home/Home.styled"; // 追加
 
 const Header: Component = () => {
   const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
 
   return (
     <HeaderContainer>
@@ -19,6 +24,7 @@ const Header: Component = () => {
         <NavItem onClick={() => navigate("/about")}>会社概要</NavItem>
         <NavItem onClick={() => navigate("/legal")}>利用規約</NavItem>
       </Nav>
+      <CTAButton onClick={handleLogin}>ログイン</CTAButton> {/* 追加 */}
     </HeaderContainer>
   );
 };

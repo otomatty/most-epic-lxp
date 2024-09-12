@@ -21,7 +21,7 @@ const Home: Component = () => {
     <HomeContainer>
       <Header>
         <h1>LXP - 学習体験プラットフォーム</h1>
-        <CTAButton onClick={handleLogin}>ログイン</CTAButton>
+        {/* <CTAButton onClick={handleLogin}>ログイン</CTAButton> 削除 */}
       </Header>
       <MainContent>
         <h2>効果的な学習をサポートする革新的なプラットフォーム</h2>

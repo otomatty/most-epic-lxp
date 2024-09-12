@@ -1,9 +1,11 @@
-import { Component } from "solid-js";
+import { Component, createSignal } from "solid-js";
 import {
   LearningStyleStepContainer,
-  LearningStyleStepSelect,
+  FadeInContainer,
 } from "./LearningStyleStep.styled";
 import { learningStyleOptions } from "../../../../../data/initialSetupData";
+import AnimatedMessage from "../../../../../components/common/AnimatedMessage/AnimatedMessage";
+import GridSelector from "../../../../../components/app/GridSelector/GridSelector";
 
 interface LearningStyleStepProps {
   learningStyle: string;
@@ -18,24 +20,48 @@ const LearningStyleStep: Component<LearningStyleStepProps> = ({
   isSelected,
   setIsSelected,
 }) => {
-  const handleSelect = (e: Event) => {
-    const value = (e.currentTarget as HTMLSelectElement).value;
-    setLearningStyle(value);
-    setIsSelected(!!value);
+  const [showForm, setShowForm] = createSignal(false);
+  const [skip, setSkip] = createSignal(false);
+
+  const skipAllAnimations = () => {
+    setSkip(true);
+    setShowForm(true);
+  };
+
+  const handleComplete = () => {
+    setTimeout(() => {
+      setShowForm(true);
+    }, 500);
+  };
+
+  const handleItemSelect = (itemId: string) => {
+    setLearningStyle(itemId);
+    setIsSelected(true);
   };
 
   return (
-    <LearningStyleStepContainer>
-      <LearningStyleStepSelect
-        value={learningStyle}
-        onInput={handleSelect}
-        required
-      >
-        <option value="">選択してください</option>
-        {learningStyleOptions.map((option) => (
-          <option value={option.value}>{option.label}</option>
-        ))}
-      </LearningStyleStepSelect>
+    <LearningStyleStepContainer onClick={skipAllAnimations}>
+      <AnimatedMessage
+        messages={["次はあなたの学習スタイルを教えてください"]}
+        delay={0}
+        skipAll={skipAllAnimations}
+        onComplete={handleComplete}
+      />
+      {showForm() && (
+        <FadeInContainer>
+          <GridSelector
+            items={learningStyleOptions.map((option) => ({
+              id: option.value,
+              emoji: "", // 絵文字がない場合は空文字列を使用
+              text: option.label,
+            }))}
+            columns={2} // 2列で表示
+            multiSelect={false} // 単一選択
+            selectedItems={learningStyle ? [learningStyle] : []}
+            onItemSelect={handleItemSelect}
+          />
+        </FadeInContainer>
+      )}
     </LearningStyleStepContainer>
   );
 };

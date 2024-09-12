@@ -1,9 +1,11 @@
-import { Component } from "solid-js";
+import { Component, createSignal } from "solid-js";
 import {
   LearningGoalStepContainer,
-  LearningGoalStepSelect,
+  FadeInContainer,
 } from "./LearningGoalStep.styled";
 import { learningGoalOptions } from "../../../../../data/initialSetupData";
+import AnimatedMessage from "../../../../../components/common/AnimatedMessage/AnimatedMessage";
+import GridSelector from "../../../../../components/app/GridSelector/GridSelector";
 
 interface LearningGoalStepProps {
   learningGoal: string;
@@ -18,24 +20,48 @@ const LearningGoalStep: Component<LearningGoalStepProps> = ({
   isSelected,
   setIsSelected,
 }) => {
-  const handleSelect = (e: Event) => {
-    const value = (e.currentTarget as HTMLSelectElement).value;
-    setLearningGoal(value);
-    setIsSelected(!!value);
+  const [showForm, setShowForm] = createSignal(false);
+  const [skip, setSkip] = createSignal(false);
+
+  const skipAllAnimations = () => {
+    setSkip(true);
+    setShowForm(true);
+  };
+
+  const handleComplete = () => {
+    setTimeout(() => {
+      setShowForm(true);
+    }, 500);
+  };
+
+  const handleItemSelect = (itemId: string) => {
+    setLearningGoal(itemId);
+    setIsSelected(true);
   };
 
   return (
-    <LearningGoalStepContainer>
-      <LearningGoalStepSelect
-        value={learningGoal}
-        onInput={handleSelect}
-        required
-      >
-        <option value="">選択してください</option>
-        {learningGoalOptions.map((option) => (
-          <option value={option.value}>{option.label}</option>
-        ))}
-      </LearningGoalStepSelect>
+    <LearningGoalStepContainer onClick={skipAllAnimations}>
+      <AnimatedMessage
+        messages={["次は学ぶ目的を教えてください"]}
+        delay={0}
+        skipAll={skipAllAnimations}
+        onComplete={handleComplete}
+      />
+      {showForm() && (
+        <FadeInContainer>
+          <GridSelector
+            items={learningGoalOptions.map((option) => ({
+              id: option.value,
+              emoji: "", // 絵文字がない場合は空文字列を使用
+              text: option.label,
+            }))}
+            columns={2} // 2列で表示
+            multiSelect={false} // 単一選択
+            selectedItems={learningGoal ? [learningGoal] : []}
+            onItemSelect={handleItemSelect}
+          />
+        </FadeInContainer>
+      )}
     </LearningGoalStepContainer>
   );
 };

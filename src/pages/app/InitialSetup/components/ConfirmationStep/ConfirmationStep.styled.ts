@@ -1,13 +1,13 @@
 import { styled } from "solid-styled-components";
 
-export const LearningStyleStepContainer = styled("div")`
+export const ConfirmationStepContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 `;
 
-export const FadeInContainer = styled("div")`
+export const FadeInContainer = styled.div`
   animation: fadeIn 0.5s ease-in-out;
   width: 100%;
 
@@ -21,21 +21,22 @@ export const FadeInContainer = styled("div")`
   }
 `;
 
-export const LearningStyleStepLabel = styled("label")`
+export const ConfirmationItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
   margin-bottom: 10px;
-  font-size: 16px;
+`;
+
+export const ConfirmationLabel = styled.span`
   font-weight: bold;
 `;
 
-export const LearningStyleStepSelect = styled("select")`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 100%;
-  margin-bottom: 20px;
+export const ConfirmationValue = styled.span`
+  text-align: right;
 `;
 
-export const LearningStyleStepButton = styled("button")`
+export const ConfirmButton = styled.button`
   background-color: #007bff;
   color: white;
   border: none;
@@ -43,14 +44,10 @@ export const LearningStyleStepButton = styled("button")`
   font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
+  margin-top: 20px;
   transition: background-color 0.3s;
 
   &:hover {
     background-color: #0056b3;
-  }
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
   }
 `;

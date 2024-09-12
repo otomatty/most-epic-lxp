@@ -14,12 +14,14 @@ import {
 import WelcomeStep from "./components/WelcomeStep/WelcomeStep";
 import NameStep from "./components/NameStep/NameStep";
 import BirthdateStep from "./components/BirthdateStep/BirthdateStep";
-import OccupationStep from "./components/OccupationStep/OccupationStep";
+import StudentOccupationStep from "./components/OccupationStep/StudentOccupationStep";
+import AdultOccupationStep from "./components/OccupationStep/AdultOccupationStep";
 import InterestStep from "./components/InterestStep/InterestStep";
 import LearningGoalStep from "./components/LearningGoalStep/LearningGoalStep";
 import LearningStyleStep from "./components/LearningStyleStep/LearningStyleStep";
 import LearningTimeStep from "./components/LearningTimeStep/LearningTimeStep";
 import DeviceStep from "./components/DeviceStep/DeviceStep";
+import ConfirmationStep from "./components/ConfirmationStep/ConfirmationStep";
 
 const InitialSetup: Component = () => {
   const [step, setStep] = createSignal(0);
@@ -28,7 +30,7 @@ const InitialSetup: Component = () => {
   const [isPublic, setIsPublic] = createSignal(false);
   const [occupation, setOccupation] = createSignal("");
   const [isStudent, setIsStudent] = createSignal(false);
-  const [interest, setInterest] = createSignal("");
+  const [interests, setInterests] = createSignal<string[]>([]);
   const [learningGoal, setLearningGoal] = createSignal("");
   const [learningStyle, setLearningStyle] = createSignal("");
   const [learningTime, setLearningTime] = createSignal("");
@@ -36,12 +38,21 @@ const InitialSetup: Component = () => {
   const [isSelected, setIsSelected] = createSignal(false);
   const [progress, setProgress] = createSignal(0);
   const navigate = useNavigate();
+  const [isMinor, setIsMinor] = createSignal(false);
+  const [privacyLevel, setPrivacyLevel] = createSignal("private"); // デフォルトを "private" に設定
 
   const user = auth.currentUser;
   const googleName = user?.displayName || null;
 
   createEffect(() => {
-    setProgress((step() / 9) * 100);
+    const birthYear = new Date(birthdate()).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+    setIsMinor(age <= 18);
+  });
+
+  createEffect(() => {
+    setProgress((step() / 10) * 100); // 10ステップに変更
   });
 
   const handleNextStep = () => {
@@ -67,7 +78,34 @@ const InitialSetup: Component = () => {
           isPublic: isPublic(),
           occupation: occupation(),
           isStudent: isStudent(),
-          interest: interest(),
+          interests: interests(),
+          learningGoal: learningGoal(),
+          learningStyle: learningStyle(),
+          learningTime: learningTime(),
+          device: device(),
+        });
+        setProgress(100);
+        setTimeout(() => {
+          alert("初期設定が完了しました。");
+          navigate("/webapp/dashboard");
+        }, 500); // 0.5秒後に遷移
+      } catch (error) {
+        console.error("初期設定に失敗しました:", error);
+        alert("初期設定失敗しました。");
+      }
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (user) {
+      try {
+        await updateDoc(doc(firestore, "users", user.uid), {
+          name: name(),
+          birthdate: birthdate(),
+          privacyLevel: privacyLevel(),
+          occupation: occupation(),
+          isStudent: isStudent(),
+          interests: interests(),
           learningGoal: learningGoal(),
           learningStyle: learningStyle(),
           learningTime: learningTime(),
@@ -99,7 +137,7 @@ const InitialSetup: Component = () => {
           </ProgressBar>
         </ProgressBarContainer>
       )}
-      <InitialSetupForm onSubmit={handleInitialSetup}>
+      <InitialSetupForm onSubmit={(e) => e.preventDefault()}>
         {step() === 0 && <WelcomeStep handleNextStep={handleNextStep} />}
         {step() === 1 && (
           <NameStep
@@ -114,27 +152,34 @@ const InitialSetup: Component = () => {
             birthdate={birthdate()}
             setBirthdate={setBirthdate}
             setIsSelected={setIsSelected}
-            isPublic={isPublic()}
-            setIsPublic={setIsPublic}
+            privacyLevel={privacyLevel()}
+            setPrivacyLevel={setPrivacyLevel}
             name={name()}
           />
         )}
-        {step() === 3 && (
-          <OccupationStep
+        {step() === 3 && isMinor() ? (
+          <StudentOccupationStep
             birthdate={birthdate()}
-            occupation={occupation()}
-            setOccupation={setOccupation}
             isStudent={isStudent()}
             setIsStudent={setIsStudent}
             setIsSelected={setIsSelected}
           />
-        )}
+        ) : step() === 3 ? (
+          <AdultOccupationStep
+            birthdate={birthdate()}
+            occupation={occupation()}
+            setOccupation={setOccupation}
+            setIsSelected={setIsSelected}
+          />
+        ) : null}
         {step() === 4 && (
           <InterestStep
-            interest={interest()}
-            setInterest={setInterest}
+            interests={interests()}
+            setInterests={setInterests}
             isSelected={isSelected()}
             setIsSelected={setIsSelected}
+            occupation={occupation()}
+            isStudent={isStudent()}
           />
         )}
         {step() === 5 && (
@@ -169,18 +214,27 @@ const InitialSetup: Component = () => {
             setIsSelected={setIsSelected}
           />
         )}
-        {step() < 8 && step() > 0 && (
+        {step() === 9 && (
+          <ConfirmationStep
+            name={name()}
+            birthdate={birthdate()}
+            privacyLevel={privacyLevel()}
+            occupation={occupation()}
+            interests={interests()}
+            learningGoal={learningGoal()}
+            learningStyle={learningStyle()}
+            learningTime={learningTime()}
+            device={device()}
+            onConfirm={handleConfirm}
+          />
+        )}
+        {step() < 9 && step() > 0 && (
           <InitialSetupButton
             type="button"
             onClick={handleNextStep}
             disabled={!isSelected() && step() > 1}
           >
             次へ
-          </InitialSetupButton>
-        )}
-        {step() === 8 && (
-          <InitialSetupButton type="submit" disabled={!isSelected()}>
-            設定
           </InitialSetupButton>
         )}
       </InitialSetupForm>

@@ -38,3 +38,10 @@ export const ToggleLabel = styled("span")`
 export const FadeInContainer = styled("div")`
   animation: ${fadeIn} 1s ease-in-out; /* フェードインアニメーション */
 `;
+
+export const RadioButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+`;

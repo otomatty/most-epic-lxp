@@ -5,8 +5,8 @@ export const HeaderContainer = styled("header")`
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: #007bff;
-  color: white;
+  background-color: white; /* 背景色を白に変更 */
+  color: #007bff; /* テキスト色を変更 */
 `;
 
 export const Logo = styled("div")`

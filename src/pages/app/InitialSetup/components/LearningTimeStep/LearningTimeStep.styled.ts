@@ -40,3 +40,17 @@ export const LearningTimeStepButton = styled("button")`
     cursor: not-allowed;
   }
 `;
+
+export const FadeInContainer = styled.div`
+  animation: fadeIn 0.5s ease-in-out;
+  width: 100%;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;

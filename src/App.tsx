@@ -96,7 +96,7 @@ function App() {
             <Route
               path="/login"
               component={() =>
-                isLoggedIn() ? <Navigate href="/dashboard" /> : <Login />
+                isLoggedIn() ? <Navigate href="/webapp/dashboard" /> : <Login />
               }
             />
             <Route path="/reset-password" component={ResetPassword} />
