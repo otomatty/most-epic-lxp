@@ -1,7 +1,10 @@
 import { styled } from "solid-styled-components";
 
-export const DashboardContainer = styled("div")`
+export const DashboardContainer = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
 `;
 
 export const JoinRoomButton = styled("button")`
@@ -26,4 +29,8 @@ export const JoinRoomButton = styled("button")`
     background-color: #cccccc;
     cursor: not-allowed;
   }
+`;
+
+export const CheckinButton = styled.button`
+  // JoinRoomButtonと同様のスタイルを適用し、必要に応じて調整
 `;

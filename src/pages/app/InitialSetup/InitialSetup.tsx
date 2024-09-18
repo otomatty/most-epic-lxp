@@ -22,6 +22,7 @@ import LearningStyleStep from "./components/LearningStyleStep/LearningStyleStep"
 import LearningTimeStep from "./components/LearningTimeStep/LearningTimeStep";
 import DeviceStep from "./components/DeviceStep/DeviceStep";
 import ConfirmationStep from "./components/ConfirmationStep/ConfirmationStep";
+import { useUserProfile } from "../../../contexts/UserProfileContext";
 
 const InitialSetup: Component = () => {
   const [step, setStep] = createSignal(0);
@@ -43,6 +44,8 @@ const InitialSetup: Component = () => {
 
   const user = auth.currentUser;
   const googleName = user?.displayName || null;
+
+  const [, updateProfile] = useUserProfile();
 
   createEffect(() => {
     const birthYear = new Date(birthdate()).getFullYear();
@@ -111,11 +114,18 @@ const InitialSetup: Component = () => {
           learningTime: learningTime(),
           device: device(),
         });
+        updateProfile({
+          interests: interests(),
+          learningGoal: learningGoal(),
+          learningStyle: learningStyle(),
+          learningTime: learningTime(),
+          device: device(),
+        });
         setProgress(100);
         setTimeout(() => {
           alert("初期設定が完了しました。");
-          navigate("/webapp/dashboard");
-        }, 500); // 0.5秒後に遷移
+          navigate("/webapp/job-selection");
+        }, 500);
       } catch (error) {
         console.error("初期設定に失敗しました:", error);
         alert("初期設定に失敗しました。");

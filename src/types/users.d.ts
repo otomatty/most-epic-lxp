@@ -7,30 +7,48 @@ declare namespace FirestoreCollections {
     userId: string;
     email: string;
     username: string;
-    photoURL: string;
-    projects: string[]; //Projectsコレクションとリンク
+    photoURL?: string;
+    projects: any[]; //Projectsコレクションとリンク
     createdAt: Timestamp;
     updatedAt: Timestamp;
-    // サブコレクション
-    FocusSessions: FocusSession[];
-    FocusStats: FocusStats;
-    TimeLogs: TimeLog[];
-    ProjectTimeStats: ProjectTimeStats[];
-    TaskTimeStats: TaskTimeStats[];
-    Goals: Goal[];
-    Habits: Habit[];
-    HabitStats: HabitStats[];
-    Jobs: Job[];
-    Titles: Title[];
-    Points: Points;
-    googleUserInfo?: GoogleUserInfo; // 追加
+    FocusSessions: any[]; // FocusSessionsサブコレクション
+    FocusStats: {
+      dailyTotal: number;
+      weeklyTotal: number;
+      monthlyTotal: number;
+      lastUpdated: Timestamp;
+    };
+    TimeLogs: any[]; // TimeLogサブコレクション
+    ProjectTimeStats: any[]; // ProjectTimeStatsサブコレクション
+    TaskTimeStats: any[]; // TaskTimeStatsサブコレクション
+    Goals: any[]; // Goalsサブコレクション
+    Habits: any[]; // Habitsサブコレクション
+    HabitStats: any[]; // HabitStatsサブコレクション
+    Jobs: UserJob[]; // Job[] から UserJob[] に変更
+    selectedJob?: string; // 追加: selectedJob プロパティ
+    Titles: any[]; // Titlesサブコレクション
+    Points: {
+      pointId: string;
+      totalPoints: number;
+      earnedFrom: any[]; // PointSource[] から any[] に変更
+    };
+    googleUserInfo: {
+      email: string;
+      displayName: string;
+      photoURL?: string;
+    }; // Googleユーザー情報
+    userLevel: number;
+    userXp: number;
+    lastCheckin: Timestamp | null;
+    loginStreak: number; // 追加: 連続ログイン日数
+    lastLoginDate: Timestamp | null; // 追加: 最後のログイン日
   }
 
   // Googleユーザー情報
   interface GoogleUserInfo {
     email: string;
     displayName: string;
-    photoURL: string;
+    photoURL?: string;
   }
 
   // Focusサブコレクション
@@ -106,14 +124,11 @@ declare namespace FirestoreCollections {
     lastUpdated: Timestamp;
   }
 
-  interface Job {
+  // Job インターフェースを UserJob に変更
+  interface UserJob {
     jobId: string;
-    jobTitle: string;
     level: number;
     xp: number;
-    skills: Skill[];
-    createdAt: Timestamp;
-    updatedAt: Timestamp;
   }
 
   interface Skill {
@@ -132,7 +147,7 @@ declare namespace FirestoreCollections {
   interface Points {
     pointId: string;
     totalPoints: number;
-    earnedFrom: PointSource[];
+    earnedFrom: any[]; // PointSource[] から any[] に変更
   }
 
   interface PointSource {

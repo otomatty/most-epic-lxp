@@ -42,7 +42,7 @@ const LearningStyleStep: Component<LearningStyleStepProps> = ({
   return (
     <LearningStyleStepContainer onClick={skipAllAnimations}>
       <AnimatedMessage
-        messages={["次はあなたの学習スタイルを教えてください"]}
+        messages={["次はあなたの好みの学習スタイルを教えてください"]}
         delay={0}
         skipAll={skipAllAnimations}
         onComplete={handleComplete}

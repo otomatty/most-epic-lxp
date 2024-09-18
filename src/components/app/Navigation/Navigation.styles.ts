@@ -10,7 +10,6 @@ export const NavContainer = styled("nav")`
   flex-direction: column;
   justify-content: space-around;
   padding: 1rem;
-  background-color: #f0f0f0;
 `;
 
 export const NavItem = styled(A)<NavItemProps>`
@@ -22,6 +21,6 @@ export const NavItem = styled(A)<NavItemProps>`
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #e0e0e0;
+    background-color: #f0f0f0;
   }
 `;

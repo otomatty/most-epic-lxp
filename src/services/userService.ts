@@ -8,8 +8,12 @@ import {
   collection,
   addDoc,
   updateDoc,
+  arrayUnion,
+  increment,
+  serverTimestamp,
 } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
+import { calculateXpGain } from "../utils/experienceUtils";
 
 // 新規ユーザー登録と最終ログイン時間の更新
 export async function createOrUpdateUser(user: any): Promise<void> {
@@ -51,12 +55,24 @@ export async function createOrUpdateUser(user: any): Promise<void> {
         displayName: user.displayName,
         photoURL: user.photoURL,
       },
+      userLevel: 1,
+      userXp: 0,
+      lastCheckin: null, // 追加
+      loginStreak: 0, // 追加
+      lastLoginDate: null, // 追加
     };
 
     await setDoc(userRef, newUser);
   } else {
     // 既存ユーザーの場合、最終ログイン時間のみ更新
-    await setDoc(userRef, { updatedAt: Timestamp.now() }, { merge: true });
+    await setDoc(
+      userRef,
+      {
+        updatedAt: serverTimestamp(),
+        lastLoginDate: serverTimestamp(), // 追加
+      },
+      { merge: true }
+    );
   }
 }
 
@@ -113,13 +129,12 @@ export async function resetPassword(email: string) {
   }
 }
 
-export const getUserData = async () => {
-  const user = auth.currentUser;
-  if (user) {
-    const userDoc = await getDoc(doc(firestore, "users", user.uid));
-    if (userDoc.exists()) {
-      return userDoc.data();
-    }
+export const getUserData = async (
+  userId: string
+): Promise<FirestoreCollections.User | null> => {
+  const userDoc = await getDoc(doc(firestore, "users", userId));
+  if (userDoc.exists()) {
+    return userDoc.data() as FirestoreCollections.User;
   }
   return null;
 };
@@ -130,3 +145,131 @@ export const updateUserData = async (data: any) => {
     await updateDoc(doc(firestore, "users", user.uid), data);
   }
 };
+
+// ジョブ選択を更新する関数を追加
+export async function updateSelectedJob(
+  userId: string,
+  jobId: string
+): Promise<void> {
+  try {
+    const userRef = doc(firestore, "users", userId);
+    await updateDoc(userRef, {
+      selectedJob: jobId,
+      Jobs: arrayUnion({
+        jobId: jobId,
+        selectedAt: Timestamp.now(),
+        level: 1, // 初期レベルを1に設定
+      }),
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error("ジョブの選択の更新に失敗しました:", error);
+    throw error;
+  }
+}
+
+// ユーザーの経験値を更新する関数
+export async function updateUserXp(
+  userId: string,
+  xpGained: number
+): Promise<void> {
+  const userRef = doc(firestore, "users", userId);
+  const userDoc = await getDoc(userRef);
+
+  if (userDoc.exists()) {
+    const userData = userDoc.data() as FirestoreCollections.User;
+    const currentXp = userData.userXp || 0;
+    const currentLevel = userData.userLevel || 1;
+
+    const newXp = currentXp + xpGained;
+    const newLevel = calculateNewLevel(newXp);
+
+    await updateDoc(userRef, {
+      userXp: newXp,
+      userLevel: newLevel,
+      updatedAt: Timestamp.now(),
+    });
+  }
+}
+
+// 経験値からレベルを計算する関数
+function calculateNewLevel(xp: number): number {
+  // この関数は、経験値に基づいてレベルを計算します
+  // 例: 100XPごとに1レベルアップする単純な計算
+  return Math.floor(xp / 100) + 1;
+}
+
+// ユーザーのレベルを取得する関数
+export async function getUserLevel(userId: string): Promise<number> {
+  const userDoc = await getDoc(doc(firestore, "users", userId));
+  if (userDoc.exists()) {
+    const userData = userDoc.data() as FirestoreCollections.User;
+    return userData.userLevel || 1;
+  }
+  return 1; // デフォルトレベル
+}
+
+// デイリーチェックイン機能を追加
+export async function performDailyCheckin(userId: string): Promise<number> {
+  const userRef = doc(firestore, "users", userId);
+  const userSnap = await getDoc(userRef);
+
+  if (userSnap.exists()) {
+    const userData = userSnap.data() as FirestoreCollections.User;
+    const lastCheckin = userData.lastCheckin?.toDate() || new Date(0);
+    const now = new Date();
+
+    // 最後のチェックインが昨日以前かどうかを確認
+    if (now.toDateString() !== lastCheckin.toDateString()) {
+      const xpGained = calculateXpGain("daily_checkin", 0);
+      const newXp = (userData.userXp || 0) + xpGained;
+      const newStreak = await updateLoginStreak(userId);
+
+      await updateDoc(userRef, {
+        userXp: newXp,
+        lastCheckin: serverTimestamp(),
+        loginStreak: newStreak,
+      });
+
+      return xpGained;
+    } else {
+      return 0; // 今日既にチェックイン済みの場合
+    }
+  }
+
+  throw new Error("User not found");
+}
+
+export async function updateLoginStreak(userId: string): Promise<number> {
+  const userRef = doc(firestore, "users", userId);
+  const userSnap = await getDoc(userRef);
+
+  if (userSnap.exists()) {
+    const userData = userSnap.data() as FirestoreCollections.User;
+    const now = Timestamp.now();
+    const lastLoginDate = userData.lastLoginDate?.toDate() || new Date(0);
+    const oneDayInMillis = 24 * 60 * 60 * 1000;
+
+    let newStreak = userData.loginStreak || 0;
+
+    if (now.toDate().getTime() - lastLoginDate.getTime() <= oneDayInMillis) {
+      // 1日以内のログインの場合、ストリークを増加
+      newStreak += 1;
+    } else if (
+      now.toDate().getTime() - lastLoginDate.getTime() >
+      oneDayInMillis
+    ) {
+      // 1日以上経過している場合、ストリークをリセット
+      newStreak = 1;
+    }
+
+    await updateDoc(userRef, {
+      loginStreak: newStreak,
+      lastLoginDate: serverTimestamp(),
+    });
+
+    return newStreak;
+  }
+
+  throw new Error("User not found");
+}
