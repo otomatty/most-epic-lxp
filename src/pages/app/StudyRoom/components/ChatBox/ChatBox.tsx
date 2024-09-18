@@ -1,5 +1,5 @@
-import { Component, createSignal, createEffect, For } from "solid-js";
-import { auth, firestore } from "../../../../firebase/config";
+import { Component, createSignal, createEffect, For } from 'solid-js';
+import { auth, firestore } from '../../../../../firebase/config';
 import {
   collection,
   addDoc,
@@ -7,13 +7,13 @@ import {
   query,
   orderBy,
   serverTimestamp,
-} from "firebase/firestore";
+} from 'firebase/firestore';
 import {
   ChatContainer,
   MessageList,
   MessageItem,
   InputContainer,
-} from "./ChatBox.styles";
+} from './ChatBox.styles';
 
 interface ChatBoxProps {
   roomId: string;
@@ -28,16 +28,16 @@ interface Message {
 
 const ChatBox: Component<ChatBoxProps> = (props) => {
   const [messages, setMessages] = createSignal<Message[]>([]);
-  const [newMessage, setNewMessage] = createSignal("");
+  const [newMessage, setNewMessage] = createSignal('');
 
   createEffect(() => {
     const messagesRef = collection(
       firestore,
-      "studyRooms",
+      'studyRooms',
       props.roomId,
-      "messages"
+      'messages'
     );
-    const q = query(messagesRef, orderBy("createdAt", "asc"));
+    const q = query(messagesRef, orderBy('createdAt', 'asc'));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const updatedMessages = snapshot.docs.map(
@@ -59,9 +59,9 @@ const ChatBox: Component<ChatBoxProps> = (props) => {
 
     const messagesRef = collection(
       firestore,
-      "studyRooms",
+      'studyRooms',
       props.roomId,
-      "messages"
+      'messages'
     );
     await addDoc(messagesRef, {
       text: newMessage(),
@@ -69,7 +69,7 @@ const ChatBox: Component<ChatBoxProps> = (props) => {
       createdAt: serverTimestamp(),
     });
 
-    setNewMessage("");
+    setNewMessage('');
   };
 
   return (
